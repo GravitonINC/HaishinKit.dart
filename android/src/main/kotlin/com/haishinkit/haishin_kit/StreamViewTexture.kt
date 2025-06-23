@@ -51,10 +51,7 @@ class StreamViewTexture(binding: FlutterPlugin.FlutterPluginBinding) :
 
     private var stream: Stream? = null
         set(value) {
-            field?.view = null
             field = value
-            field?.view = this
-            pixelTransform.screen = value?.screen
         }
 
     private var entry: TextureRegistry.SurfaceTextureEntry? = null
