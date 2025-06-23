@@ -5,8 +5,8 @@ import android.view.Surface
 import com.haishinkit.graphics.PixelTransform
 import com.haishinkit.graphics.VideoGravity
 import com.haishinkit.graphics.effect.VideoEffect
-import com.haishinkit.media.Stream
-import com.haishinkit.media.StreamView
+import com.haishinkit.stream.Stream
+import com.haishinkit.view.StreamView
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.view.TextureRegistry
 

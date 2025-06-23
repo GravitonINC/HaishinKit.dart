@@ -1,7 +1,7 @@
 package com.haishinkit.haishin_kit
 
-import com.haishinkit.event.Event
-import com.haishinkit.event.IEventListener
+import com.haishinkit.rtmp.event.Event
+import com.haishinkit.rtmp.event.IEventListener
 import com.haishinkit.rtmp.RtmpConnection
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall

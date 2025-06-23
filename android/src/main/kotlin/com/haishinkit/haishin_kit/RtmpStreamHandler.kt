@@ -10,11 +10,11 @@ import android.util.Log
 import android.util.Size
 import android.view.WindowManager
 import com.haishinkit.codec.CodecOption
-import com.haishinkit.event.Event
-import com.haishinkit.event.IEventListener
+import com.haishinkit.rtmp.event.Event
+import com.haishinkit.rtmp.event.IEventListener
 import com.haishinkit.haishinkit.ProfileLevel
-import com.haishinkit.media.AudioRecordSource
-import com.haishinkit.media.Camera2Source
+import com.haishinkit.media.source.AudioRecordSource
+import com.haishinkit.media.source.Camera2Source
 import com.haishinkit.rtmp.RtmpStream
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
