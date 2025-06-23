@@ -70,7 +70,7 @@ class StreamViewTexture(binding: FlutterPlugin.FlutterPluginBinding) :
 
     fun attachStream(stream: Stream?) {
         this.stream = stream
-        stream?.mixer?.registerOutput(this)
+        stream?.registerOutput(this)
     }
 
     fun dispose() {

@@ -20,6 +20,7 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.*
+import com.haishinkit.media.MediaMixer
 
 class RtmpStreamHandler(
     private val plugin: HaishinKitPlugin, handler: RtmpConnectionHandler?
@@ -29,6 +30,7 @@ class RtmpStreamHandler(
     }
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var mediaMixer: MediaMixer? = null
     
     private var instance: RtmpStream? = null
         set(value) {
@@ -50,8 +52,9 @@ class RtmpStreamHandler(
         handler?.instance?.let {
             instance = RtmpStream(plugin.flutterPluginBinding.applicationContext, it)
             instance?.addEventListener(Event.RTMP_STATUS, this)
+            mediaMixer = MediaMixer(plugin.flutterPluginBinding.applicationContext)
             scope.launch {
-                instance?.mixer?.registerOutput(instance!!)
+                mediaMixer?.registerOutput(instance!!)
             }
         }
         channel = EventChannel(
@@ -108,12 +111,12 @@ class RtmpStreamHandler(
                 val source = call.argument<Map<String, Any?>>("source")
                 if (source == null) {
                     scope.launch {
-                        instance?.mixer?.attachAudio(0, null)
+                        mediaMixer?.attachAudio(0, null)
                     }
                 } else {
                     val audioRecordSource = AudioRecordSource(plugin.flutterPluginBinding.applicationContext)
                     scope.launch {
-                        instance?.mixer?.attachAudio(0, audioRecordSource)
+                        mediaMixer?.attachAudio(0, audioRecordSource)
                     }
                 }
                 result.success(null)
@@ -123,7 +126,7 @@ class RtmpStreamHandler(
                 val source = call.argument<Map<String, Any?>>("source")
                 if (source == null) {
                     scope.launch {
-                        instance?.mixer?.attachVideo(0, null)
+                        mediaMixer?.attachVideo(0, null)
                     }
                     camera = null
                 } else {
@@ -139,7 +142,7 @@ class RtmpStreamHandler(
                     camera = Camera2Source(plugin.flutterPluginBinding.applicationContext)
                     camera?.let { cameraSource ->
                         scope.launch {
-                            instance?.mixer?.attachVideo(0, cameraSource)
+                            mediaMixer?.attachVideo(0, cameraSource)
                         }
                     }
                 }
@@ -186,6 +189,7 @@ class RtmpStreamHandler(
                 eventSink = null
                 camera = null
                 scope.cancel()
+                mediaMixer = null
                 instance = null
                 plugin.onDispose(hashCode())
                 result.success(null)
