@@ -63,11 +63,14 @@ class StreamViewTexture(binding: FlutterPlugin.FlutterPluginBinding) :
     }
 
     override fun append(buffer: MediaBuffer) {
-        
+        entry?.surfaceTexture()?.let { surfaceTexture ->
+            
+        }
     }
 
     fun attachStream(stream: Stream?) {
         this.stream = stream
+        stream?.mixer?.registerOutput(this)
     }
 
     fun dispose() {

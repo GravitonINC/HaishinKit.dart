@@ -19,6 +19,7 @@ import com.haishinkit.rtmp.RtmpStream
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.*
 
 class RtmpStreamHandler(
     private val plugin: HaishinKitPlugin, handler: RtmpConnectionHandler?
@@ -27,6 +28,8 @@ class RtmpStreamHandler(
         const val TAG = "RtmpStream"
     }
 
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    
     private var instance: RtmpStream? = null
         set(value) {
             field?.close()
@@ -47,6 +50,9 @@ class RtmpStreamHandler(
         handler?.instance?.let {
             instance = RtmpStream(plugin.flutterPluginBinding.applicationContext, it)
             instance?.addEventListener(Event.RTMP_STATUS, this)
+            scope.launch {
+                instance?.mixer?.registerOutput(instance!!)
+            }
         }
         channel = EventChannel(
             plugin.flutterPluginBinding.binaryMessenger, "com.haishinkit.eventchannel/${hashCode()}"
@@ -101,10 +107,14 @@ class RtmpStreamHandler(
             "$TAG#attachAudio" -> {
                 val source = call.argument<Map<String, Any?>>("source")
                 if (source == null) {
-                    // Audio detached
+                    scope.launch {
+                        instance?.mixer?.attachAudio(0, null)
+                    }
                 } else {
                     val audioRecordSource = AudioRecordSource(plugin.flutterPluginBinding.applicationContext)
-                    // Audio attached
+                    scope.launch {
+                        instance?.mixer?.attachAudio(0, audioRecordSource)
+                    }
                 }
                 result.success(null)
             }
@@ -112,22 +122,25 @@ class RtmpStreamHandler(
             "$TAG#attachVideo" -> {
                 val source = call.argument<Map<String, Any?>>("source")
                 if (source == null) {
+                    scope.launch {
+                        instance?.mixer?.attachVideo(0, null)
+                    }
                     camera = null
-                    // Video detached
                 } else {
                     var facing = 0
                     when (source["position"]) {
                         "front" -> {
                             facing = CameraCharacteristics.LENS_FACING_FRONT
                         }
-
                         "back" -> {
                             facing = CameraCharacteristics.LENS_FACING_BACK
                         }
                     }
                     camera = Camera2Source(plugin.flutterPluginBinding.applicationContext)
-                    camera?.let {
-                        // Video attached
+                    camera?.let { cameraSource ->
+                        scope.launch {
+                            instance?.mixer?.attachVideo(0, cameraSource)
+                        }
                     }
                 }
                 result.success(null)
@@ -172,6 +185,7 @@ class RtmpStreamHandler(
             "$TAG#dispose" -> {
                 eventSink = null
                 camera = null
+                scope.cancel()
                 instance = null
                 plugin.onDispose(hashCode())
                 result.success(null)
