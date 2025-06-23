@@ -5,13 +5,18 @@ import android.view.Surface
 import com.haishinkit.graphics.PixelTransform
 import com.haishinkit.graphics.VideoGravity
 import com.haishinkit.graphics.effect.VideoEffect
+import com.haishinkit.media.MediaBuffer
+import com.haishinkit.media.MediaOutputDataSource
 import com.haishinkit.stream.Stream
 import com.haishinkit.view.StreamView
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.view.TextureRegistry
+import java.lang.ref.WeakReference
 
 class StreamViewTexture(binding: FlutterPlugin.FlutterPluginBinding) :
     StreamView {
+    
+    override var dataSource: WeakReference<MediaOutputDataSource>? = null
     override var videoGravity: VideoGravity
         get() = pixelTransform.videoGravity
         set(value) {
@@ -58,6 +63,10 @@ class StreamViewTexture(binding: FlutterPlugin.FlutterPluginBinding) :
         val entry = binding.textureRegistry.createSurfaceTexture()
         pixelTransform.surface = Surface(entry.surfaceTexture())
         this.entry = entry
+    }
+
+    override fun append(buffer: MediaBuffer) {
+        
     }
 
     override fun attachStream(stream: Stream?) {
