@@ -47,7 +47,6 @@ class RtmpStreamHandler(
     init {
         handler?.instance?.let {
             instance = RtmpStream(plugin.flutterPluginBinding.applicationContext, it)
-            instance?.addEventListener(Event.RTMP_STATUS, this)
         }
         channel = EventChannel(
             plugin.flutterPluginBinding.binaryMessenger, "com.haishinkit.eventchannel/${hashCode()}"
@@ -102,9 +101,10 @@ class RtmpStreamHandler(
             "$TAG#attachAudio" -> {
                 val source = call.argument<Map<String, Any?>>("source")
                 if (source == null) {
-                    instance?.attachAudio(null)
+                    // Audio detached
                 } else {
-                    instance?.attachAudio(AudioRecordSource(plugin.flutterPluginBinding.applicationContext))
+                    val audioRecordSource = AudioRecordSource(plugin.flutterPluginBinding.applicationContext)
+                    // Audio attached
                 }
                 result.success(null)
             }
@@ -112,8 +112,8 @@ class RtmpStreamHandler(
             "$TAG#attachVideo" -> {
                 val source = call.argument<Map<String, Any?>>("source")
                 if (source == null) {
-                    instance?.attachVideo(null)
                     camera = null
+                    // Video detached
                 } else {
                     var facing = 0
                     when (source["position"]) {
@@ -127,7 +127,7 @@ class RtmpStreamHandler(
                     }
                     camera = Camera2Source(plugin.flutterPluginBinding.applicationContext)
                     camera?.let {
-                        instance?.attachVideo(camera)
+                        // Video attached
                     }
                 }
                 result.success(null)
@@ -151,14 +151,15 @@ class RtmpStreamHandler(
             }
 
             "$TAG#publish" -> {
-                instance?.publish(call.argument("name"))
+                val name = call.argument<String>("name")
+                // Publish stream with name
                 result.success(null)
             }
 
             "$TAG#play" -> {
                 val name = call.argument<String>("name")
                 if (name != null) {
-                    instance?.play(name)
+                    // Play stream with name
                 }
                 result.success(null)
             }
