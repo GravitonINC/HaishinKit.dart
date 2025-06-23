@@ -66,7 +66,7 @@ class StreamViewTexture(binding: FlutterPlugin.FlutterPluginBinding) :
         
     }
 
-    override fun attachStream(stream: Stream?) {
+    fun attachStream(stream: Stream?) {
         this.stream = stream
     }
 

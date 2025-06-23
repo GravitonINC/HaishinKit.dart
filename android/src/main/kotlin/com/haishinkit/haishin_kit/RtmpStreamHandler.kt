@@ -40,7 +40,6 @@ class RtmpStreamHandler(
         }
     private var camera: Camera2Source? = null
         set(value) {
-            field?.close()
             field = value
         }
 
