@@ -1,3 +1,9 @@
+## 0.15.0
+* Bump up HaishinKit.kt to 0.16.0
+* Support PixelTransform.backgroundColor property
+* Improved camera source error handling and fallback mechanism
+* Updated compile SDK to 36
+
 ## 0.14.3
 * Support macOS and SPM.
 * Bump up HaishinKit.swift to 2.0.7
