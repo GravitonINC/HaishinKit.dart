@@ -29,8 +29,7 @@ class RtmpStreamHandler(
 
     private var instance: RtmpStream? = null
         set(value) {
-            field?.view = null
-            field?.dispose()
+            field?.close()
             field = value
         }
     private var channel: EventChannel
@@ -48,7 +47,6 @@ class RtmpStreamHandler(
     init {
         handler?.instance?.let {
             instance = RtmpStream(plugin.flutterPluginBinding.applicationContext, it)
-            instance?.screen?.frame = Rect(0, 0, 1280, 720)
             instance?.addEventListener(Event.RTMP_STATUS, this)
         }
         channel = EventChannel(
@@ -60,14 +58,11 @@ class RtmpStreamHandler(
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "$TAG#getHasAudio" -> {
-                result.success(!instance?.audioSource?.isMuted!!)
+                result.success(true)
             }
 
             "$TAG#setHasAudio" -> {
                 val value = call.argument<Boolean?>("value")
-                value?.let {
-                    instance?.audioSource?.isMuted = !it
-                }
                 result.success(null)
             }
 
@@ -81,9 +76,6 @@ class RtmpStreamHandler(
 
             "$TAG#setFrameRate" -> {
                 val value = call.argument<Int?>("value")
-                value?.let {
-                    instance?.videoSetting?.frameRate = it
-                }
                 result.success(null)
             }
 
@@ -94,50 +86,16 @@ class RtmpStreamHandler(
 
             "$TAG#setAudioSettings" -> {
                 val source = call.argument<Map<String, Any?>>("settings") ?: return
-                (source["bitrate"] as? Int)?.let {
-                    instance?.audioSetting?.bitRate = it
-                }
                 result.success(null)
             }
 
             "$TAG#setVideoSettings" -> {
                 val source = call.argument<Map<String, Any?>>("settings") ?: return
-                (source["width"] as? Int)?.let {
-                    instance?.videoSetting?.width = it
-                }
-                (source["height"] as? Int)?.let {
-                    instance?.videoSetting?.height = it
-                }
-                (source["frameInterval"] as? Int)?.let {
-                    instance?.videoSetting?.IFrameInterval = it
-                }
-                (source["bitrate"] as? Int)?.let {
-                    instance?.videoSetting?.bitRate = it
-                }
-                (source["profileLevel"] as? String)?.let {
-                    try {
-                        val profileLevel = ProfileLevel.valueOf(it)
-                        val options = mutableListOf<CodecOption>()
-                        options.add(CodecOption(KEY_PROFILE, profileLevel.profile))
-                        options.add(CodecOption(KEY_LEVEL, profileLevel.level))
-                        instance?.videoSetting?.options = options
-                    } catch (ignored: Exception) {
-                        // Do nothing, use default setting
-                    }
-                }
                 result.success(null)
             }
 
             "$TAG#setScreenSettigns" -> {
                 val source = call.argument<Map<String, Any?>>("settings") ?: return
-                val frame = Rect(0, 0, 0, 0)
-                (source["width"] as? Int)?.let {
-                    frame.set(0, 0, it, frame.height())
-                }
-                (source["height"] as? Int)?.let {
-                    frame.set(0, 0, frame.width(), it)
-                }
-                instance?.screen?.frame = frame
                 result.success(null)
             }
 
@@ -177,17 +135,9 @@ class RtmpStreamHandler(
 
             "$TAG#registerTexture" -> {
                 val netStream = instance
-                if (netStream?.view == null) {
-                    val texture = StreamViewTexture(plugin.flutterPluginBinding)
-                    texture.attachStream(netStream)
-                    if (camera?.stream != null) {
-                        camera?.open()
-                    }
-                    result.success(texture.id)
-                } else {
-                    val texture = (netStream.view as? StreamViewTexture)
-                    result.success(texture?.id)
-                }
+                val texture = StreamViewTexture(plugin.flutterPluginBinding)
+                texture.attachStream(netStream)
+                result.success(texture.id)
             }
 
             "$TAG#unregisterTexture" -> {
@@ -195,19 +145,9 @@ class RtmpStreamHandler(
             }
 
             "$TAG#updateTextureSize" -> {
-                val netStream = instance
-                if (netStream == null) {
-                    result.success(null)
-                } else {
-                    val texture = (netStream.view as? StreamViewTexture)
-                    val width = call.argument<Double>("width") ?: 0
-                    val height = call.argument<Double>("height") ?: 0
-                    texture?.imageExtent = Size(width.toInt(), height.toInt())
-                    (plugin.flutterPluginBinding.applicationContext.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.orientation?.let {
-                        camera?.video?.deviceOrientation = it
-                    }
-                    result.success(texture?.id)
-                }
+                val width = call.argument<Double>("width") ?: 0
+                val height = call.argument<Double>("height") ?: 0
+                result.success(null)
             }
 
             "$TAG#publish" -> {
@@ -231,9 +171,6 @@ class RtmpStreamHandler(
             "$TAG#dispose" -> {
                 eventSink = null
                 camera = null
-                (instance?.view as? StreamViewTexture)?.let {
-                    it.dispose()
-                }
                 instance = null
                 plugin.onDispose(hashCode())
                 result.success(null)

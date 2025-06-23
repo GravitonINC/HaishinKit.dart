@@ -56,7 +56,7 @@ class HaishinKitPlugin : FlutterPlugin, MethodCallHandler {
             }
 
             "getPlatformVersion" -> {
-                result.success(com.haishinkit.rtmp.BuildConfig.VERSION_NAME)
+                result.success("0.16.0")
             }
 
             else -> {

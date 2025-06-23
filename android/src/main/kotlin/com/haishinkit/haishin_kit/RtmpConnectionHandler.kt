@@ -16,7 +16,7 @@ class RtmpConnectionHandler(
 
     var instance: RtmpConnection? = RtmpConnection()
         private set(value) {
-            field?.dispose()
+            field?.close()
             field = value
         }
 
