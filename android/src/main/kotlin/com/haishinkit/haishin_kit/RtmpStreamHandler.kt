@@ -47,6 +47,7 @@ class RtmpStreamHandler(
     init {
         handler?.instance?.let {
             instance = RtmpStream(plugin.flutterPluginBinding.applicationContext, it)
+            instance?.addEventListener(Event.RTMP_STATUS, this)
         }
         channel = EventChannel(
             plugin.flutterPluginBinding.binaryMessenger, "com.haishinkit.eventchannel/${hashCode()}"
@@ -152,14 +153,14 @@ class RtmpStreamHandler(
 
             "$TAG#publish" -> {
                 val name = call.argument<String>("name")
-                // Publish stream with name
+                instance?.publish(name)
                 result.success(null)
             }
 
             "$TAG#play" -> {
                 val name = call.argument<String>("name")
                 if (name != null) {
-                    // Play stream with name
+                    instance?.play(name)
                 }
                 result.success(null)
             }
